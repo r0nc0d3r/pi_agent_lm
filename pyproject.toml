@@ -1,0 +1,35 @@
+[project]
+name = "pi-agent-lm"
+version = "0.1.0"
+description = "MQTT sensor topics to LiteRT-LM (Gemma 4 E2B) on-device inference — JSON events for edge IoT"
+readme = "README.md"
+license = { file = "LICENSE" }
+requires-python = ">=3.10"
+dependencies = [
+    "huggingface-hub>=0.20.0",
+    "paho-mqtt>=2.0.0",
+]
+
+[project.optional-dependencies]
+litert = [
+    "litert-lm-nightly",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.0",
+    "pytest-cov>=4.0",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+
+[tool.coverage.run]
+branch = true
+source = ["main.py", "sensor_logic.py"]
+omit = ["tests/*"]
+
+[tool.coverage.report]
+fail_under = 80
+show_missing = true

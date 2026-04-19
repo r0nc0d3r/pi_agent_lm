@@ -1,0 +1,22 @@
+---
+description: Python style, modular code, and README update before every commit
+alwaysApply: true
+---
+
+# Python
+
+- Follow normal Python habits: clear names, small functions, split big files into modules when it helps.
+- Prefer readable over clever. Type hints OK where they help. One obvious way to do a thing.
+- Imports sorted sensibly, no dead code left behind.
+
+# README + commit ritual
+
+Before **any** commit this agent makes:
+
+1. **Summarize what changed** (short bullets, caveman English OK — straight talk, dev jargon fine).
+2. **Put that summary in `README.md`** — e.g. section `## Recent changes` (newest on top) or append under it. Don't wipe old entries unless user asked.
+3. **Keep `## How to run` accurate** — deps, env, command (e.g. `uv run main` or `python main.py`). Update if entrypoint or steps change.
+
+If README missing sections, add these headings so future commits have a place to go.
+
+No corporate doc tone. Straightforward, technical, minimal fluff.
