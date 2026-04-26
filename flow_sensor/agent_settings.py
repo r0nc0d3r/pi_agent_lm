@@ -31,6 +31,12 @@ class WaterSensorConfig:
     topic_flow: str
     topic_leak: str
     location: str
+    # Flow must be present (pulses) for this long before MQTT flow publishes begin.
+    flow_stabilize_s: float
+    # No pulses for this long = flow stalled; stop publishing until next stable session.
+    flow_stall_s: float
+    # Seconds between flow MQTT messages while in an active (stabilized) flow session.
+    data_interval_s: float
 
 
 def default_config_path() -> Path:
@@ -81,6 +87,9 @@ def parse_water_sensor(raw: dict[str, Any]) -> WaterSensorConfig:
         topic_flow=str(w.get("topic_flow", "pi/sensor/flow")),
         topic_leak=str(w.get("topic_leak", "pi/sensor/water")),
         location=str(w.get("location", "indoor")),
+        flow_stabilize_s=float(w.get("flow_stabilize_s", 60.0)),
+        flow_stall_s=float(w.get("flow_stall_s", 60.0)),
+        data_interval_s=float(w.get("data_interval_s", 2.0)),
     )
 
 

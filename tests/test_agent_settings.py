@@ -74,4 +74,7 @@ def test_water_sensor_bundle(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) ->
     m, w = ag.load_water_sensor_bundle()
     assert w.pin_flow_bcm == 17
     assert w.topic_leak == "pi/sensor/water"
+    assert w.flow_stabilize_s == 60.0
+    assert w.flow_stall_s == 60.0
+    assert w.data_interval_s == 2.0
     assert m.broker_host == "broker.test.example"

@@ -151,16 +151,59 @@ def main() -> None:
     print("Starting Real Water Sensor...")
     print(f"Flow Pin: {ws.pin_flow_bcm}, Leak Pin: {ws.pin_leak_bcm}")
     print(f"Publishing to {ws.topic_flow} and {ws.topic_leak}")
+    print(
+        f"Flow gating: stabilize {ws.flow_stabilize_s}s, stall {ws.flow_stall_s}s, "
+        f"data interval {ws.data_interval_s}s"
+    )
 
     last_time = time.time()
     last_leak_state: bool | None = None
 
+    last_loop_pc = 0
+    now_m = time.monotonic()
+    last_pulse_mono: float = 0.0
+    streak_start_mono: float | None = None
+    flow_sending = False
+    # Floor avoids stall_s=0 (would "stall" every loop between pulses).
+    stall_s = max(float(ws.flow_stall_s), 0.1)
+    stabilize_s = max(float(ws.flow_stabilize_s), 0.0)
+    data_interval = max(float(ws.data_interval_s), 0.1)
+
     try:
         while True:
             current_time = time.time()
+            now_m = time.monotonic()
+            with _pulse_lock:
+                cur_pc = pulse_count
+            new_pulses = cur_pc - last_loop_pc
+            if new_pulses < 0:
+                new_pulses = 0
+            if new_pulses > 0:
+                last_pulse_mono = now_m
+            stalled = last_pulse_mono == 0.0 or (
+                (now_m - last_pulse_mono) > stall_s
+            )
+
+            if stalled:
+                streak_start_mono = None
+                if flow_sending:
+                    print("[FLOW] session ended (stalled)")
+                flow_sending = False
+                with _pulse_lock:
+                    pulse_count = 0
+            else:
+                if streak_start_mono is None:
+                    streak_start_mono = now_m
+                if (not flow_sending) and (now_m - streak_start_mono) >= stabilize_s:
+                    flow_sending = True
+                    with _pulse_lock:
+                        pulse_count = 0
+                    last_time = current_time - data_interval
+                    print("[FLOW] session started (stabilized)")
+
             elapsed = current_time - last_time
 
-            if elapsed >= 2.0:
+            if flow_sending and elapsed >= data_interval:
                 with _pulse_lock:
                     pc = pulse_count
                 rate_lpm = flow_rate_lpm(
@@ -183,6 +226,9 @@ def main() -> None:
                 with _pulse_lock:
                     pulse_count = 0
                 last_time = current_time
+
+            with _pulse_lock:
+                last_loop_pc = pulse_count
 
             if gpio_mode == "gpiozero":
                 assert leak_dev is not None

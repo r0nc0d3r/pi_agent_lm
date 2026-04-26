@@ -12,6 +12,12 @@ publish_topic = ""
 pin_flow_bcm = 17
 pin_leak_bcm = 27
 pulse_k = 7.5
+# Seconds of continuous flow (pulses) before MQTT flow updates start (default 60).
+flow_stabilize_s = 60.0
+# No pulses for this long = flow ended; stop publishing until next session (default 60).
+flow_stall_s = 60.0
+# Seconds between flow MQTT messages while a session is active (the former fixed 2s loop).
+data_interval_s = 2.0
 topic_flow = "pi/sensor/flow"
 topic_leak = "pi/sensor/water"
 location = "indoor"
