@@ -1,0 +1,11 @@
+---
+description: Broker hosts and app config live in config.toml + example template
+alwaysApply: true
+---
+
+# config.toml
+
+- **Source of truth:** `config.toml` at repo root (or path in `PI_AGENT_LM_CONFIG`). Do **not** hardcode broker hostnames, IPs, or ports in Python except reading from config or env overrides used in tests.
+- **Example file:** Any new key in `config.toml` must appear in **`config.example.toml`** with **placeholder values only** (fake hostnames like `mqtt.example.home`, no real infra).
+- **Hostnames, not IPs:** Prefer DNS / mDNS names for MQTT, **SSH**, and **scp** in docs and examples.
+- **Git:** `config.toml` is gitignored; `config.example.toml` is committed.

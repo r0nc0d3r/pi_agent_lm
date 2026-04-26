@@ -7,9 +7,9 @@ alwaysApply: true
 
 - **New or changed behavior** → add or update tests in `tests/` (`test_*.py`). No merge of untested logic unless user says skip tests for this change.
 - **Coverage floor: 80%** line coverage on the package/modules you touch; project-wide goal same — do not drop total below 80% when adding code.
-- **Tooling:** use `pytest` + `pytest-cov` (or project standard if already different). Typical check:
+- **Tooling:** use `pytest` + `pytest-cov` via **uv** (`uv run pytest …`). Typical check:
 
-  `pytest --cov=<import_name> --cov-report=term-missing --cov-fail-under=80`
+  `uv run pytest --cov=<import_name> --cov-report=term-missing --cov-fail-under=80`
 
   Replace `<import_name>` with real package dir (e.g. `pi_agent_lm` once layout exists) or `main` for single-file stage.
 
