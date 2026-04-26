@@ -32,4 +32,7 @@ default.profraw
 # Cursor IDE (project rules stay local; use .cursor/rules in your checkout only)
 .cursor/
 
+# Local broker hostname + layout (copy from config.example.toml)
+config.toml
+
 .DS_Store

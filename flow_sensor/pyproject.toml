@@ -1,0 +1,17 @@
+[project]
+name = "flow-sensor"
+version = "0.1.0"
+description = "YF-S201 water flow + leak GPIO → MQTT (Raspberry Pi, uv + .venv)"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "paho-mqtt>=2.0.0",
+    "gpiozero>=2.0",
+    "tomli>=2.0.0; python_version < '3.11'",
+]
+
+# Pi 5 / Bookworm: reliable GPIO edges via lgpio (optional on Mac/dev).
+[project.optional-dependencies]
+pi = [
+    "lgpio>=0.2.2.0",
+]

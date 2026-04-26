@@ -1,0 +1,18 @@
+# Example only — copy to config.toml and set real hostnames (no IPs in git).
+# Real deployments: use DNS / mDNS names for MQTT, SSH, and scp.
+
+[mqtt]
+broker_host = "mqtt.example.home"
+port = 1883
+subscribe_pattern = "pi/sensor/#"
+client_id = "pi-agent-example"
+# Optional: agent echoes JSON to this topic; empty = off
+publish_topic = ""
+
+[water_sensor]
+pin_flow_bcm = 17
+pin_leak_bcm = 27
+pulse_k = 7.5
+topic_flow = "pi/sensor/flow"
+topic_leak = "pi/sensor/water"
+location = "indoor"

@@ -1,10 +1,36 @@
 from __future__ import annotations
 
+from pathlib import Path
 from unittest.mock import MagicMock
 
 import pytest
 
 import main as m
+
+
+def _write_test_config(tmp_path: Path) -> None:
+    (tmp_path / "config.toml").write_text(
+        "\n".join(
+            [
+                "[mqtt]",
+                'broker_host = "broker.test.local"',
+                "port = 1883",
+                'subscribe_pattern = "pi/sensor/#"',
+                'client_id = "test-agent"',
+                'publish_topic = ""',
+                "",
+                "[water_sensor]",
+                "pin_flow_bcm = 17",
+                "pin_leak_bcm = 27",
+                "pulse_k = 7.5",
+                'topic_flow = "pi/sensor/flow"',
+                'topic_leak = "pi/sensor/water"',
+                'location = "indoor"',
+                "",
+            ]
+        ),
+        encoding="utf-8",
+    )
 
 
 def _fake_conv(text: str) -> MagicMock:
@@ -48,7 +74,7 @@ def test_run_inference_bad_json() -> None:
 
 def test_env_defaults(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.delenv("MQTT_HOST", raising=False)
-    assert m._env("MQTT_HOST", "127.0.0.1") == "127.0.0.1"
+    assert m._env("MQTT_HOST", "") == ""
     assert m._env_int("MQTT_PORT", 1883) == 1883
 
 
@@ -78,6 +104,61 @@ def test_build_engine_no_litert(monkeypatch: pytest.MonkeyPatch) -> None:
         m.build_engine("/x")
 
 
+def test_main_exits_on_invalid_config(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    (tmp_path / "config.toml").write_text(
+        "[mqtt]\nbroker_host = \"\"\n", encoding="utf-8"
+    )
+    monkeypatch.chdir(tmp_path)
+    monkeypatch.setattr(m.os.path, "isfile", lambda _p: True)
+    lm = MagicMock()
+    lm.LogSeverity.ERROR = 0
+    lm.Backend.CPU = 0
+    engine_ctx = MagicMock()
+    engine_ctx.__enter__.return_value = MagicMock()
+    engine_ctx.__exit__.return_value = None
+    lm.Engine.return_value = engine_ctx
+    monkeypatch.setattr(m, "litert_lm", lm)
+    monkeypatch.setattr(m, "_LITERT_IMPORT_ERROR", None)
+    called: list[int] = []
+
+    def _exit(code: int) -> None:
+        called.append(code)
+        raise SystemExit(code)
+
+    monkeypatch.setattr(m.sys, "exit", _exit)
+    with pytest.raises(SystemExit):
+        m.main()
+    assert called == [2]
+
+
+def test_main_exits_without_config(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    monkeypatch.chdir(tmp_path)
+    monkeypatch.setattr(m.os.path, "isfile", lambda _p: True)
+    lm = MagicMock()
+    lm.LogSeverity.ERROR = 0
+    lm.Backend.CPU = 0
+    engine_ctx = MagicMock()
+    engine_ctx.__enter__.return_value = MagicMock()
+    engine_ctx.__exit__.return_value = None
+    lm.Engine.return_value = engine_ctx
+    monkeypatch.setattr(m, "litert_lm", lm)
+    monkeypatch.setattr(m, "_LITERT_IMPORT_ERROR", None)
+    called: list[int] = []
+
+    def _exit(code: int) -> None:
+        called.append(code)
+        raise SystemExit(code)
+
+    monkeypatch.setattr(m.sys, "exit", _exit)
+    with pytest.raises(SystemExit):
+        m.main()
+    assert called == [2]
+
+
 def test_main_exits_without_model_file(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(m.os.path, "isfile", lambda _p: False)
     called: list[int] = []
@@ -92,7 +173,9 @@ def test_main_exits_without_model_file(monkeypatch: pytest.MonkeyPatch) -> None:
     assert called == [2]
 
 
-def test_main_runs_loop(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_main_runs_loop(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    _write_test_config(tmp_path)
+    monkeypatch.chdir(tmp_path)
     monkeypatch.setattr(m.os.path, "isfile", lambda _p: True)
     lm = MagicMock()
     lm.LogSeverity.ERROR = 0
@@ -118,7 +201,9 @@ def test_main_runs_loop(monkeypatch: pytest.MonkeyPatch) -> None:
     engine_ctx.__exit__.assert_called_once()
 
 
-def test_main_connect_refused(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_main_connect_refused(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    _write_test_config(tmp_path)
+    monkeypatch.chdir(tmp_path)
     monkeypatch.setattr(m.os.path, "isfile", lambda _p: True)
     lm = MagicMock()
     lm.LogSeverity.ERROR = 0

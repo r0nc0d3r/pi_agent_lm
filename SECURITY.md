@@ -4,7 +4,7 @@ This project is intended for **local / lab / trusted-LAN** use unless you harden
 
 ## MQTT
 
-- Uses **cleartext MQTT by default** (`paho-mqtt` to `MQTT_HOST`:`MQTT_PORT`). For anything beyond a trusted network, configure your broker for **TLS** (`mqtts://` / port 8883) and **authentication**; you may need code changes to pass TLS options to the client.
+- Uses **cleartext MQTT by default** (`paho-mqtt` to host/port from `**config.toml`** or env overrides). For anything beyond a trusted network, configure your broker for **TLS** (`mqtts://` / port 8883) and **authentication**; you may need code changes to pass TLS options to the client. Keep real broker hostnames out of git (`config.toml` is gitignored; use `config.example.toml` for placeholders).
 - **Access control** (who can publish/subscribe) must be enforced at the **broker** (ACLs, bridges), not in this repo.
 
 ## Model and supply chain
