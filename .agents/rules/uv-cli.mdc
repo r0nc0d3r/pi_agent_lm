@@ -1,0 +1,11 @@
+---
+description: Use uv for Python CLI in this repo (not bare python/python3)
+alwaysApply: true
+---
+
+# uv CLI
+
+- **Run project/tools:** `uv run …` (e.g. `uv run main.py`, `cd flow_sensor && uv run python water_sensor.py`, `uv run pytest …`).
+- **One-off tools:** prefer `uvx …` over global installs when it fits.
+- **Dependencies:** `uv add …`, `uv add --dev …`, optional extras `uv sync --extra litert --extra pi --group dev`.
+- Do **not** tell users or agents to use raw `python`, `python3`, or `pip` for this repo unless debugging outside uv.

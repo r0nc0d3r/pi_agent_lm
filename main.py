@@ -10,6 +10,7 @@ from typing import Any
 
 import paho.mqtt.client as mqtt
 
+import agent_settings as cfg
 import sensor_logic as sl
 
 try:
@@ -23,7 +24,6 @@ else:
 LOG = logging.getLogger(__name__)
 
 DEFAULT_MODEL = "gemma-4-E2B-it.litertlm"
-DEFAULT_SUBSCRIBE = "pi/sensor/#"
 
 
 def _env(name: str, default: str) -> str:
@@ -137,14 +137,36 @@ def main() -> None:
         LOG.error("litert_lm import failed: %s", _LITERT_IMPORT_ERROR)
         sys.exit(2)
 
-    host = _env("MQTT_HOST", "127.0.0.1")
-    port = _env_int("MQTT_PORT", 1883)
-    sub_topic = _env("MQTT_SUBSCRIBE", DEFAULT_SUBSCRIBE)
-    publish_topic = os.environ.get("AGENT_MQTT_PUBLISH_TOPIC") or None
+    try:
+        mqtt_cfg = cfg.load_mqtt_config()
+    except FileNotFoundError as e:
+        LOG.error("%s", e)
+        sys.exit(2)
+    except ValueError as e:
+        LOG.error("invalid config: %s", e)
+        sys.exit(2)
+
+    host = _env("MQTT_HOST", "").strip() or mqtt_cfg.broker_host
+    if not host:
+        LOG.error("mqtt broker host missing — set mqtt.broker_host in config.toml or MQTT_HOST")
+        sys.exit(2)
+
+    if os.environ.get("MQTT_PORT", "").strip():
+        port = _env_int("MQTT_PORT", mqtt_cfg.port)
+    else:
+        port = mqtt_cfg.port
+
+    sub_topic = _env("MQTT_SUBSCRIBE", "").strip() or mqtt_cfg.subscribe_pattern
+    cid = _env("MQTT_CLIENT_ID", "").strip() or mqtt_cfg.client_id
+
+    if "AGENT_MQTT_PUBLISH_TOPIC" in os.environ:
+        publish_topic = os.environ.get("AGENT_MQTT_PUBLISH_TOPIC", "").strip() or None
+    else:
+        publish_topic = mqtt_cfg.publish_topic
 
     client = mqtt.Client(
         callback_api_version=mqtt.CallbackAPIVersion.VERSION2,
-        client_id=_env("MQTT_CLIENT_ID", "pi-agent-lm"),
+        client_id=cid,
     )
 
     engine_cm = build_engine(model_path)
@@ -180,8 +202,8 @@ def main() -> None:
         except ConnectionRefusedError:
             LOG.error(
                 "mqtt broker refused connection at %s:%s — nothing listening. "
-                "Start a broker (e.g. macOS: `brew services start mosquitto`, "
-                "Linux: `sudo systemctl start mosquitto`), or set MQTT_HOST / MQTT_PORT.",
+                "Start a broker or fix mqtt.broker_host in config.toml (use hostname). "
+                "Override: MQTT_HOST / MQTT_PORT.",
                 host,
                 port,
             )

@@ -1,0 +1,17 @@
+# Example only — copy to config.toml on the Pi. Use hostnames (mDNS), not IPs in git.
+# Example LAN: broker on dev machine r0n4k.local; Pi hostname r0nh0m5.local.
+
+[mqtt]
+broker_host = "r0n4k.local"
+port = 1883
+subscribe_pattern = "pi/sensor/#"
+client_id = "flow-sensor-example"
+publish_topic = ""
+
+[water_sensor]
+pin_flow_bcm = 17
+pin_leak_bcm = 27
+pulse_k = 7.5
+topic_flow = "pi/sensor/flow"
+topic_leak = "pi/sensor/water"
+location = "indoor"

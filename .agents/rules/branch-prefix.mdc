@@ -1,0 +1,10 @@
+---
+description: Git branch names use agent/ prefix (not cursor/ or claude/ or codex/)
+alwaysApply: true
+---
+
+# Branch naming
+
+- **Prefix feature/work branches with `agent/`**, e.g. `agent/flow-sensor-config`, `agent/fix-mqtt-timeout`.
+- Do **not** use the **`cursor/`** or **`claude/`** or **`codex/`** prefix for new branches.
+- Keep names short, kebab-case, and descriptive after the prefix.
