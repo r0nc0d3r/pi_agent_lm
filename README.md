@@ -138,6 +138,7 @@ uv run pytest --cov=main --cov=sensor_logic --cov=agent_settings --cov=flow_sens
 
 ## Recent changes
 
+- **AGENTS.md:** indexes [`.agents/`](.agents/) **rules** (branch prefix, uv, config, tests/coverage, Python + README ritual) and **skills** (caveman, caveman-commit); agents should follow those files as project defaults.
 - **Git branches:** use **`agent/`** prefix for new work branches (not **`cursor/`** or **`claude/`** or **`codex/`**);
 - **Water sensor:** Default **`GPIOZERO_PIN_FACTORY=rpigpio`** when **`lgpio`** missing (quieter logs); poll interval **1 ms** (lighter CPU); **`python -u`** in README for **`sensor.log`**.
 - **Config:** `config.toml` + `config.example.toml` (`agent_settings.py`); broker host/topics/pins not hardcoded — env vars override for dev/CI; `config.toml` gitignored; docs + rule: hostnames for MQTT/SSH/scp, **uv** on Pi.
